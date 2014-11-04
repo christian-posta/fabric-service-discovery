@@ -12,12 +12,22 @@
     <context:property-placeholder location="classpath:/META-INF/spring/application.properties" />
 
 
-    <bean id="fileServiceRoute" class="com.redhat.poc.demo.routes.FileServiceRoute"/>
+    
 
 
     <camelContext id="StandAloneCamelContext" xmlns="http://camel.apache.org/schema/spring">
-        <routeBuilder ref="fileServiceRoute"/>
-    </camelContext>
+    <route>
+        <from uri="cxfrs:bean:restServer?bindingStyle=SimpleConsumer"/>
+        <log message="Just got a message for the file service..."/>
+        <marshal>
+            <json library="Jackson"/>
+        </marshal>
+        <to uri="file:target/out?fileName=serivce-call-${date:now:yyyyMMdd}"/>
+        <setBody>
+            <constant>{ "status": "success" }</constant>
+        </setBody>
+    </route>
+</camelContext>
 
     <cxf:rsServer id="restServer"
                   address="http://localhost:9000"

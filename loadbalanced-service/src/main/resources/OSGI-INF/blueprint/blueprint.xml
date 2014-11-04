@@ -25,14 +25,14 @@
     </camelContext>
 
     <!-- SLA policy -->
-    <bean id="slaPolicy" class="com.redhat.poc.demo.routes.SLAPolicy">
+    <!--  bean id="slaPolicy" class="com.redhat.poc.demo.routes.SLAPolicy">
         <property name="thresHoldMs" value="10000"/>
         <property name="includes">
             <list>
                 <value>cxf:bean:creditCheckCXFService</value>
             </list>
         </property>
-    </bean>
+    </bean-->
 
     <!-- Proxy endpoint -->
     <camelcxf:cxfEndpoint id="creditCheckCXFServiceProxy"
