@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:cxf="http://camel.apache.org/schema/cxf"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd">
+
+
+
+    <context:property-placeholder location="classpath:/META-INF/spring/application.properties" />
+
+
+    <bean id="fileServiceRoute" class="com.redhat.poc.demo.routes.FileServiceRoute"/>
+
+
+    <camelContext id="StandAloneCamelContext" xmlns="http://camel.apache.org/schema/spring">
+        <routeBuilder ref="fileServiceRoute"/>
+    </camelContext>
+
+    <cxf:rsServer id="restServer"
+                  address="http://localhost:9000"
+                  serviceClass="com.redhat.poc.demo.rest.RestResource"
+                  loggingFeatureEnabled="true" >
+        <cxf:providers>
+            <bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
+        </cxf:providers>
+    </cxf:rsServer>
+
+</beans>

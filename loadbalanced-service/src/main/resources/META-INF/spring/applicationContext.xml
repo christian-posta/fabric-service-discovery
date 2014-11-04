@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:cxf="http://camel.apache.org/schema/cxf"
+       xmlns:http-conf="http://cxf.apache.org/transports/http/configuration"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://cxf.apache.org/transports/http/configuration http://cxf.apache.org/schemas/configuration/http-conf.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd">
+
+
+    <import resource="classpath:/META-INF/spring/cxf-endpoints/camel-cxf-credit-check.xml" />
+
+    <context:property-placeholder location="classpath:/META-INF/spring/application.properties" />
+
+
+    <bean id="proxyRoute" class="com.redhat.poc.demo.routes.ServiceProxyRoute" />
+
+
+
+    <camelContext id="StandAloneCamelContext" xmlns="http://camel.apache.org/schema/spring">
+        <routeBuilder ref="proxyRoute"/>
+    </camelContext>
+
+    <!-- SLA policy -->
+    <bean id="slaPolicy" class="com.redhat.poc.demo.routes.SLAPolicy">
+        <property name="thresHoldMs" value="10000"/>
+        <property name="includes">
+            <list>
+                <value>cxf:bean:creditCheckCXFService</value>
+            </list>
+        </property>
+    </bean>
+
+
+    <!--Proxy interface... -->
+    <cxf:cxfEndpoint id="creditCheckCXFServiceProxy"
+                     address="${service.proxy.creditCheck.publish.url}"
+                     serviceClass="org.example.wspcreditcheckservice.WspCreditCheckService"
+                     serviceName="tns:wspCreditCheckService"
+                     endpointName="tns:wspCreditCheckServicePort"
+                     wsdlURL="classpath:wsdl/credit-check/CreditCheckService.wsdl"
+                     xmlns:tns="http://www.example.org/wspCreditCheckService/">
+        <cxf:properties>
+            <entry key="dataFormat" value="POJO"/>
+        </cxf:properties>
+    </cxf:cxfEndpoint>
+
+    <http-conf:conduit
+            name="{http://www.example.org/wspCreditCheckService/}wspCreditCheckServicePort.http-conduit">
+        <http-conf:client ReceiveTimeout="20000" ConnectionTimeout="20000" />
+    </http-conf:conduit>
+
+</beans>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:cxf="http://camel.apache.org/schema/cxf"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+              http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd ">
+
+
+    <cxf:cxfEndpoint id="creditCheckCXFService"
+                     address="${service.creditCheck.publish.url}"
+                     serviceClass="org.example.wspcreditcheckservice.WspCreditCheckService"
+                     serviceName="tns:wspCreditCheckService"
+                     endpointName="tns:wspCreditCheckServicePort"
+                     wsdlURL="classpath:wsdl/credit-check/CreditCheckService.wsdl"
+                     xmlns:tns="http://www.example.org/wspCreditCheckService/">
+        <cxf:properties>
+            <entry key="dataFormat" value="POJO"/>
+        </cxf:properties>
+    </cxf:cxfEndpoint>
+
+
+
+</beans>

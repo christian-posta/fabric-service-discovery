@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:cxf="http://camel.apache.org/schema/blueprint/cxf"
+           xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs"
+           xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0"
+           xsi:schemaLocation="
+		http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+		http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd
+        http://cxf.apache.org/transports/http/configuration http://cxf.apache.org/schemas/configuration/http-conf.xsd
+		http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
+
+
+
+    <cm:property-placeholder id="myblueprint.placeholder" persistent-id="demo.poc.file.pid">
+        <cm:default-properties>
+        </cm:default-properties>
+    </cm:property-placeholder>
+
+    <bean id="fileServiceRoute" class="com.redhat.poc.demo.routes.FileServiceRoute"/>
+
+
+    <camelContext id="fileServiceCamelContext" xmlns="http://camel.apache.org/schema/blueprint" autoStartup="true">
+        <routeBuilder ref="fileServiceRoute"/>
+    </camelContext>
+
+
+    <cxf:rsServer id="restServer"
+                  address="/rest"
+                  serviceClass="com.redhat.poc.demo.rest.RestResource"
+                  loggingFeatureEnabled="true" >
+        <cxf:providers>
+            <bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
+        </cxf:providers>
+        <cxf:features>
+            <bean class="org.apache.cxf.jaxrs.swagger.SwaggerFeature"/>
+        </cxf:features>
+    </cxf:rsServer>
+
+</blueprint>

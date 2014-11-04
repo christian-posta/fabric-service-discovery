@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap11="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+                  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/"
+                  xmlns:wsp="http://www.w3.org/ns/ws-policy"
+                  xmlns:wsp200409="http://schemas.xmlsoap.org/ws/2004/09/policy"
+                  xmlns:wsp200607="http://www.w3.org/2006/07/ws-policy"
+                  xmlns:ns0="http://www.example.org/wspCreditCheckService/"
+                  targetNamespace="http://www.example.org/wspCreditCheckService/">
+    <wsdl:types xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        <xsd:schema>
+            <xsd:import schemaLocation="CreditCheckService.xsd1.xsd"
+                        namespace="http://www.example.org/wspCreditCheckService/"/>
+        </xsd:schema>
+    </wsdl:types>
+    <wsdl:message name="creditCheckRequest">
+        <wsdl:part name="creditCheckRequest" element="xsns:creditCheck"
+                   xmlns:xsns="http://www.example.org/wspCreditCheckService/"/>
+    </wsdl:message>
+    <wsdl:message name="creditCheckResponse">
+        <wsdl:part name="creditCheckResponse" element="xsns:creditCheckResponse"
+                   xmlns:xsns="http://www.example.org/wspCreditCheckService/"/>
+    </wsdl:message>
+    <wsdl:portType name="wspCreditCheckService">
+        <wsdl:operation name="creditCheck">
+            <wsdl:input name="creditCheckRequest" message="ns0:creditCheckRequest"/>
+            <wsdl:output name="creditCheckResponse" message="ns0:creditCheckResponse"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="wspCreditCheckServiceBinding" type="ns0:wspCreditCheckService">
+        <soap11:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+        <wsdl:operation name="creditCheck">
+            <soap11:operation soapAction="http://www.example.org/wspCreditCheckService/creditCheck" style="document"/>
+            <wsdl:input name="creditCheckRequest">
+                <soap11:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="creditCheckResponse">
+                <soap11:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="wspCreditCheckService">
+        <wsdl:port name="wspCreditCheckServicePort" binding="ns0:wspCreditCheckServiceBinding">
+            <soap11:address location="http://10.68.60.203:3051/CreditCheckService"/>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>

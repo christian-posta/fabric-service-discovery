@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <import resource="classpath:META-INF/spring/route/camel-route-credit-check.xml"/>
+    <import resource="classpath:META-INF/spring/cxf-endpoints/camel-cxf-credit-check.xml"/>
+
+    <context:property-placeholder location="/META-INF/spring/properties/supporting.properties"/>
+
+
+    <camelContext id="AllSupportingServicesCamelContext" xmlns="http://camel.apache.org/schema/spring">
+        <routeContextRef ref="creditCheckRouteContext" />
+    </camelContext>
+
+</beans>

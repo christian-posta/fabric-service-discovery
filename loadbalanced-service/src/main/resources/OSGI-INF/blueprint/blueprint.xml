@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:camelcxf="http://camel.apache.org/schema/blueprint/cxf"
+           xmlns:http-conf="http://cxf.apache.org/transports/http/configuration"
+           xmlns:cxf="http://cxf.apache.org/blueprint/core"
+           xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0"
+           xsi:schemaLocation="
+		http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+        http://cxf.apache.org/transports/http/configuration http://cxf.apache.org/schemas/configuration/http-conf.xsd
+		http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
+
+
+    <cm:property-placeholder id="myblueprint.placeholder" persistent-id="demo.poc.loadbalance.pid" />
+
+    <bean id="proxyRoute" class="com.redhat.poc.demo.routes.ServiceProxyRoute">
+        <!--set this to "fabric:democluster:" to cluster it -->
+        <property name="fabricPrefix" value="${fabric.prefix}"/>
+    </bean>
+
+
+
+    <!-- Camel route...-->
+    <camelContext id="loadbalancerServer" xmlns="http://camel.apache.org/schema/blueprint" autoStartup="true">
+        <routeBuilder ref="proxyRoute"/>
+    </camelContext>
+
+    <!-- SLA policy -->
+    <bean id="slaPolicy" class="com.redhat.poc.demo.routes.SLAPolicy">
+        <property name="thresHoldMs" value="10000"/>
+        <property name="includes">
+            <list>
+                <value>cxf:bean:creditCheckCXFService</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Proxy endpoint -->
+    <camelcxf:cxfEndpoint id="creditCheckCXFServiceProxy"
+                     address="${service.proxy.creditCheck.publish.url}"
+                     serviceClass="org.example.wspcreditcheckservice.WspCreditCheckService"
+                     serviceName="tns:wspCreditCheckService"
+                     endpointName="tns:wspCreditCheckServicePort"
+                     wsdlURL="classpath:wsdl/credit-check/CreditCheckService.wsdl"
+                     xmlns:tns="http://www.example.org/wspCreditCheckService/"
+                     bus="proxycxf">
+        <camelcxf:properties>
+            <entry key="dataFormat" value="POJO"/>
+        </camelcxf:properties>
+    </camelcxf:cxfEndpoint>
+
+    <!-- Used to call the client... -->
+    <camelcxf:cxfEndpoint id="creditCheckCXFService"
+                          address="${service.creditCheck.publish.url}"
+                          serviceClass="org.example.wspcreditcheckservice.WspCreditCheckService"
+                          serviceName="tns:wspCreditCheckService"
+                          endpointName="tns:wspCreditCheckServicePort"
+                          wsdlURL="classpath:wsdl/credit-check/CreditCheckService.wsdl"
+                          xmlns:tns="http://www.example.org/wspCreditCheckService/"
+                          >
+        <camelcxf:properties>
+            <entry key="dataFormat" value="POJO"/>
+        </camelcxf:properties>
+    </camelcxf:cxfEndpoint>
+
+
+    <!-- Set the HTTP timeout for calls to 20s -->
+    <http-conf:conduit
+            name="{http://www.example.org/wspCreditCheckService/}wspCreditCheckServicePort.http-conduit">
+        <http-conf:client ReceiveTimeout="20000" ConnectionTimeout="20000" />
+    </http-conf:conduit>
+
+    <!-- Set up the cxf bus to be load balanced in fabric-->
+    <reference id="curator"
+               interface="org.apache.curator.framework.CuratorFramework" />
+    <bean id="fabricLoadBalancerFeature" class="io.fabric8.cxf.FabricLoadBalancerFeature">
+        <property name="fabricPath" value="demo"/>
+        <property name="curator" ref="curator" />
+        <property name="addressResolver" ref="addressResolver"/>
+    </bean>
+    <bean id="addressResolver" class="io.fabric8.cxf.PrefixAddressResolver">
+        <property name="prefixAddress" value="${http.url}/cxf" />
+    </bean>
+
+    <cxf:bus bus="proxycxf">
+        <cxf:features>
+            <ref component-id="fabricLoadBalancerFeature"/>
+        </cxf:features>
+    </cxf:bus>
+
+</blueprint>
